@@ -5,18 +5,15 @@ services:
       dockerfile: Dockerfile
     container_name: laravel-app
 
-
-    # コンテナ内でホストと同じユーザーで実行する
-    user: "${UID}:${GID}"
-
-    # ⬇️ app の方に ports を追加し、5173 をこちらに繋ぎます！
+    # ⬇️ ports を追加し、5173 をこちらに繋ぎます！
     ports:
-      - "5173:5173" 
+      - "5173:5173"
     volumes:
       - ./src:/var/www
-      - ./database/database.sqlite:/var/www/database/database.sqlite
     networks:
       - laravel
+    depends_on:
+      - db
 
   web:
     image: nginx:alpine
@@ -31,6 +28,24 @@ services:
     networks:
       - laravel
 
+  db:
+    image: mysql:8.0
+    container_name: laravel-db
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel
+
 networks:
   laravel:
     driver: bridge
+
+volumes:
+  db_data:
